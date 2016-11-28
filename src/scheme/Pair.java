@@ -1,10 +1,8 @@
-package parser;
-
+package scheme;
 
 public class Pair {
-    Object first;
-    Object second;
-
+    public Object first;
+    public Object second;
 
     public Pair(Object first, Object second) {
         this.first = first;

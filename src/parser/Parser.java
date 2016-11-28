@@ -1,18 +1,20 @@
 package parser;
 
+import scheme.Pair;
+
 import java.io.InputStream;
 
 import static parser.Lexer.EOF;
-import static parser.Utils.list;
+import static scheme.Utils.list;
 
 public class Parser {
     Lexer lexer;
 
-    Parser(InputStream in) {
+    public Parser(InputStream in) {
         lexer = new Lexer(in);
     }
 
-    Object parse() {
+    public Object parse() {
         try {
             Object token = lexer.nextToken();
             if (token instanceof Character) {
@@ -30,7 +32,6 @@ public class Parser {
                         if (token == EOF) {
                             throw new ParseException("expect ),not complete...");
                         } else {
-                            lexer.SaveToken(token);
                             return head.second;
                         }
                     case ')':

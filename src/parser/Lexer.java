@@ -23,6 +23,9 @@ public class Lexer {
 
         try {
             char ch = reader.read();
+            while (ch != (char) -1 && Character.isWhitespace(ch)) {
+                ch = reader.read();
+            }
             StringBuilder buffer;
             switch (ch) {
                 case (char) -1:
@@ -47,7 +50,7 @@ public class Lexer {
                 case '"':
                     ch = reader.read();
                     buffer = new StringBuilder(50);
-                    while (ch != (char)-1 && ch != '"') {
+                    while (ch != (char) -1 && ch != '"') {
                         buffer.append(ch);
                         ch = reader.read();
                     }
@@ -57,16 +60,31 @@ public class Lexer {
                         throw new ParseException("except a \",not complete...");
                     }
                 default:
+                    char c = ch;
                     buffer = new StringBuilder(10);
                     do {
-                        buffer.append(ch);
-                        ch = reader.read();
-                    } while (ch != (char) -1 && ch != ')' && !Character.isWhitespace(ch));
+                        buffer.append(c);
+                        c = reader.read();
+                    } while (c != (char) -1 && c != ')' && !Character.isWhitespace(c));
 
-                    if (ch == ')') {
+                    if (c == ')') {
                         reader.save(')');
                     }
-                    return buffer.toString().intern();
+                    String result = buffer.toString();
+                    if (ch >= '0' && ch <= '9') {
+                        try {
+                            if (result.indexOf('.') != -1) {
+                                return Double.valueOf(result);
+                            } else {
+                                return Integer.valueOf(result);
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("not a number");
+                            return null;
+                        }
+                    } else {
+                        return buffer.toString().intern();
+                    }
 
             }
         } catch (IOException e) {
@@ -83,7 +101,7 @@ public class Lexer {
     }
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Path path = Paths.get("test.txt");
         InputStream in = null;
         try {
@@ -95,11 +113,11 @@ public class Lexer {
                 o = lexer.nextToken();
             }
 
-
         } catch (IOException e) {
             e.printStackTrace();
+            System.exit(2);
         } catch (ParseException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }

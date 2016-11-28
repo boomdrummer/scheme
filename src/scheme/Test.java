@@ -1,4 +1,6 @@
-package parser;
+package scheme;
+
+import parser.Parser;
 
 import java.io.IOException;
 import java.io.InputStream;
