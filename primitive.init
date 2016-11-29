@@ -1,0 +1,6 @@
+(define map
+  (lambda (op list)
+    (if (null? list)
+        '()
+        (cons (op (car list))
+              (map op (cdr list))))))
