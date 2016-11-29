@@ -1,5 +1,6 @@
 package scheme;
 
+import parser.Lexer;
 import parser.Parser;
 
 import java.io.IOException;
@@ -7,11 +8,36 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Function;
 
 import static scheme.Utils.*;
 
 @SuppressWarnings("unchecked")
 public class Interpreter {
+    private Environment env0 = Environment.INIT_ENV;
+
+    public Interpreter() {
+        init();
+    }
+
+    void init() {
+        Path path = Paths.get("primitive.init");
+        InputStream in = null;
+        try {
+            in = Files.newInputStream(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("primitive.init file not exists");
+            System.exit(2);
+        }
+        Parser parser = new Parser(in);
+        Object o = parser.parse();
+        while (o != Lexer.EOF) {
+            eval(o, env0);
+            o = parser.parse();
+        }
+    }
+
     Object eval(Object exp, Environment env) {
         if (exp instanceof String) {
             return env.lookup(exp);
@@ -43,15 +69,13 @@ public class Interpreter {
                 Object params = map(cdr(exp), o -> eval(o, env));
                 if (fun instanceof Closure) {
                     return apply((Closure) fun, params);
-                } else if (fun instanceof PrimitiveFunction) {
-                    return ((PrimitiveFunction) fun).apply(params);
-                } else {
-                    throw new SyntaxException("not supported ... ");
+                } else if (fun instanceof Function) {
+                    return ((Function) fun).apply(params);
                 }
             }
-        } else {
-            return exp;
         }
+
+        return exp;
 
     }
 
@@ -66,19 +90,11 @@ public class Interpreter {
             InputStream inputStream = Files.newInputStream(path);
             Parser parser = new Parser(inputStream);
             Interpreter interpreter = new Interpreter();
-            Environment env = Environment.EMPTY_ENV;
-            env.define("a", 1);
-            env.define("+", (PrimitiveFunction) param -> {
-                Object p1 = car(param);
-                Object p2 = cadr(param);
-                if (p1 instanceof Integer && p2 instanceof Integer) {
-                    return (Integer) p1 + (Integer) p2;
-                }
-                return 0;
-            });
-            interpreter.eval(parser.parse(), env);
-
-            System.out.println(interpreter.eval(parser.parse(), env));
+            Object exp = parser.parse();
+            while (exp != Lexer.EOF) {
+                System.out.println(interpreter.eval(exp,Environment.INIT_ENV));
+                exp = parser.parse();
+            }
 
 
         } catch (IOException e) {

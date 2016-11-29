@@ -73,11 +73,7 @@ public class Lexer {
                     String result = buffer.toString();
                     if (ch >= '0' && ch <= '9') {
                         try {
-                            if (result.indexOf('.') != -1) {
-                                return Double.valueOf(result);
-                            } else {
-                                return Integer.valueOf(result);
-                            }
+                            return Double.valueOf(result);
                         } catch (NumberFormatException e) {
                             System.out.println("not a number");
                             return null;

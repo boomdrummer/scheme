@@ -1,10 +1,15 @@
 package scheme;
 
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
 public class Utils {
+
+    public static Object cons(Object o1, Object o2) {
+        return new Pair(o1, o2);
+    }
 
     public static Object car(Object pair) {
         if (pair instanceof Pair) {
@@ -61,6 +66,18 @@ public class Utils {
         return car(cdr(cdr(cdr(pair))));
     }
 
+    static Function unaryAdapter(Function function) {
+        return p -> function.apply(car(p));
+    }
+
+    static Function binaryAdapter(BiFunction function) {
+        return p -> function.apply(car(p), cadr(p));
+    }
+
+    static Function numericAdapter(BiFunction<Double, Double, Object> function) {
+        return p -> function.apply((Double)car(p), (Double)cadr(p));
+    }
+
 
     /**
      * if object is false return false,else return true
@@ -104,7 +121,7 @@ public class Utils {
 
     public static void main(String[] args) {
         Pair list = list(1, 2, 3, 4, 5);
-        foreach(map(list, e -> e instanceof Integer ? (int) e + 1 : 0),System.out::print);
+        foreach(map(list, e -> e instanceof Integer ? (int) e + 1 : 0), System.out::print);
 
     }
 }
