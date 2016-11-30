@@ -39,63 +39,69 @@ public class Interpreter {
     }
 
     Object eval(Object exp, Environment env) {
-        if (exp instanceof String) {
-            return env.lookup(exp);
-        } else if (exp instanceof Pair) {
-            Object first = car(exp);
-            if (first == "if") {
-                Object pred = cadr(exp);
-                Object e1 = caddr(exp);
-                Object e2 = cadddr(exp);
-                return isTrue(eval(pred, env)) ? eval(e1, env) : eval(e2, env);
-            } else  if(first == "list"){
-                return map(cdr(exp), o -> eval(o, env));
-            }else if (first == "define") {
-                Object second = cadr(exp);
-                if (second instanceof Pair) { // define function
-                    Object var = car(second);
-                    Object params = cdr(second);
-                    Object body = cddr(exp);
-                    return env.define(var, new Closure(params, body, env));
-                } else if (second instanceof String) {
-                    return env.define(second, eval(caddr(exp), env));
-                } else {
-                    throw new SyntaxException("illege define ..");
-                }
-            } else if (first == "lambda") {
-                Object params = cadr(exp);
-                Object body = cddr(exp);
-                return new Closure(params, body, env);
-            } else if (first == "let") {
-                Object params = cadr(exp);
-                Object body = caddr(exp);
-                Object vars = map(params, Utils::car);
-                Object vals = map(params, Utils::cadr);
-                return eval(body, new Environment(vars, vals, env));
-            } else if (first == "cond") {
-                Object list = cdr(exp);
-                while (list != null) {
-                    Object current = car(list);
-                    Object pred = car(current);
-                    if (pred.equals("else")||isTrue(eval(pred,env))) {
-                        return eval(cadr(current), env);
+        while (true) {
+            if (exp instanceof String) {
+                return env.lookup(exp);
+            } else if (exp instanceof Pair) {
+                Object first = car(exp);
+                if (first == "if") {
+                    Object pred = cadr(exp);
+                    Object e1 = caddr(exp);
+                    Object e2 = cadddr(exp);
+                    exp = isTrue(eval(pred, env)) ? e1 : e2;
+                } else if (first == "list") {
+                    final Environment env0 = env;
+                    return map(cdr(exp), o -> eval(o, env0));
+                } else if (first == "define") {
+                    Object second = cadr(exp);
+                    if (second instanceof Pair) { // define function
+                        Object var = car(second);
+                        Object params = cdr(second);
+                        Object body = cddr(exp);
+                        return env.define(var, new Closure(params, body, env));
+                    } else if (second instanceof String) {
+                        return env.define(second, eval(caddr(exp), env));
                     } else {
-                        list = cdr(list);
+                        throw new SyntaxException("illege define ..");
+                    }
+                } else if (first == "lambda") {
+                    Object params = cadr(exp);
+                    Object body = cddr(exp);
+                    return new Closure(params, body, env);
+                } else if (first == "let") {
+                    Object params = cadr(exp);
+                    Object body = caddr(exp);
+                    Object vars = map(params, Utils::car);
+                    Object vals = map(params, Utils::cadr);
+                    exp = body;
+                    env = new Environment(vars, vals, env);
+                } else if (first == "cond") {
+                    Object list = cdr(exp);
+                    while (list != null) {
+                        Object current = car(list);
+                        Object pred = car(current);
+                        if (pred.equals("else") || isTrue(eval(pred, env))) {
+                            exp = cadr(current);
+                            break;
+                        } else {
+                            list = cdr(list);
+                        }
+                    }
+                } else {
+                    Object fun = eval(first, env);
+                    final Environment env0 = env;
+                    Object params = map(cdr(exp), o -> eval(o, env0));
+                    if (fun instanceof Closure) {
+                        return apply((Closure) fun, params);
+                    } else if (fun instanceof Function) {
+                        return ((Function) fun).apply(params);
                     }
                 }
             } else {
-                Object fun = eval(first, env);
-                Object params = map(cdr(exp), o -> eval(o, env));
-                if (fun instanceof Closure) {
-                    return apply((Closure) fun, params);
-                } else if (fun instanceof Function) {
-                    return ((Function) fun).apply(params);
-                }
+                return exp;
             }
+
         }
-
-        return exp;
-
     }
 
     Object apply(Closure closure, Object vals) {
