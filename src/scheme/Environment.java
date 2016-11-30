@@ -29,11 +29,15 @@ public class Environment {
 
     Object lookup(Object var) {
         if (var instanceof String) {
-            Object result = map.get(var);
-            if (result == null && parent != null) {
-                result = parent.lookup(var);
+            if (map.containsKey(var)) {
+                return map.get(var);
+            } else {
+                if (parent != null) {
+                    return parent.lookup(var);
+                } else {
+                    throw new SyntaxException("undefined variable:" + var);
+                }
             }
-            return result;
         } else {
             throw new SyntaxException("expect a string...");
         }

@@ -4,3 +4,26 @@
         '()
         (cons (op (car list))
               (map op (cdr list))))))
+
+(define filter
+  (lambda (pred l)
+    (cond ((null? l) '())
+          ((pred (car l)) (cons (car l) (filter pred (cdr l))))
+          (else
+           (filter pred (cdr l))))))
+
+
+(define (accumulate op initial list)
+  (if (null? list)
+      initial
+      (op (car list)
+          (accumulate op initial (cdr list)))))
+
+(define (append list1 list2)
+  (if (null? list1)
+      list2
+      (cons (car list1) (append (cdr list1) list2))))
+
+(define (flatmap op list)
+  (accumulate append '() (map op list)))
+

@@ -48,12 +48,14 @@ public class Interpreter {
                 Object e1 = caddr(exp);
                 Object e2 = cadddr(exp);
                 return isTrue(eval(pred, env)) ? eval(e1, env) : eval(e2, env);
-            } else if (first == "define") {
+            } else  if(first == "list"){
+                return map(cdr(exp), o -> eval(o, env));
+            }else if (first == "define") {
                 Object second = cadr(exp);
                 if (second instanceof Pair) { // define function
                     Object var = car(second);
                     Object params = cdr(second);
-                    Object body = caddr(exp);
+                    Object body = cddr(exp);
                     return env.define(var, new Closure(params, body, env));
                 } else if (second instanceof String) {
                     return env.define(second, eval(caddr(exp), env));
@@ -62,8 +64,25 @@ public class Interpreter {
                 }
             } else if (first == "lambda") {
                 Object params = cadr(exp);
-                Object body = caddr(exp);
+                Object body = cddr(exp);
                 return new Closure(params, body, env);
+            } else if (first == "let") {
+                Object params = cadr(exp);
+                Object body = caddr(exp);
+                Object vars = map(params, Utils::car);
+                Object vals = map(params, Utils::cadr);
+                return eval(body, new Environment(vars, vals, env));
+            } else if (first == "cond") {
+                Object list = cdr(exp);
+                while (list != null) {
+                    Object current = car(list);
+                    Object pred = car(current);
+                    if (pred.equals("else")||isTrue(eval(pred,env))) {
+                        return eval(cadr(current), env);
+                    } else {
+                        list = cdr(list);
+                    }
+                }
             } else {
                 Object fun = eval(first, env);
                 Object params = map(cdr(exp), o -> eval(o, env));
@@ -80,8 +99,15 @@ public class Interpreter {
     }
 
     Object apply(Closure closure, Object vals) {
+        Environment env = new Environment(closure.params, vals, closure.env);
+        Object body = closure.body;
+        while (!isLast(body)) {
+            eval(car(body), env);
+            body = cdr(body);
+        }
 
-        return eval(closure.body, new Environment(closure.params, vals, closure.env));
+        return eval(car(body), env);
+
     }
 
     public static void main(String[] args) {
@@ -92,7 +118,7 @@ public class Interpreter {
             Interpreter interpreter = new Interpreter();
             Object exp = parser.parse();
             while (exp != Lexer.EOF) {
-                System.out.println(interpreter.eval(exp,Environment.INIT_ENV));
+                System.out.println(interpreter.eval(exp, Environment.INIT_ENV));
                 exp = parser.parse();
             }
 

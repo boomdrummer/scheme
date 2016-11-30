@@ -45,7 +45,7 @@ public class Lexer {
                     } else if (ch == 'f') {
                         return false;
                     } else {
-                        throw new ParseException('#' + ch + " not supported");
+                        throw new ParseException("#" + ch + " not supported");
                     }
                 case '"':
                     ch = reader.read();

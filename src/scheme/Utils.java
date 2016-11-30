@@ -66,6 +66,18 @@ public class Utils {
         return car(cdr(cdr(cdr(pair))));
     }
 
+    public static Object cddr(Object pair) {
+        return cdr(cdr(pair));
+    }
+
+    public static boolean isLast(Object pair) {
+        if (pair instanceof Pair) {
+            return cdr(pair) == null;
+        } else {
+            throw new SyntaxException("expect pair type..");
+        }
+    }
+
     static Function unaryAdapter(Function function) {
         return p -> function.apply(car(p));
     }
