@@ -1,1 +1,28 @@
-(list 1 2 3 4)
+(define safe?
+  (lambda (l)
+    (define iter
+      (lambda (l i offset)
+        (if (null? l)
+            #t
+            (let ((cur (car l))
+                  (rest (cdr l)))
+              (cond ((= cur i) #f)
+                    ((= cur (+ i offset)) #f)
+                    ((= cur (- i offset)) #f)
+                    (else
+                     (iter rest i (+ offset 1))))))))
+    (iter (cdr l) (car l) 1)))
+
+
+(define queens
+  (lambda (size)
+  (define e (range 1 9))
+    (if (= size 0)
+        '(())
+        (filter safe? (flatmap (lambda (x)
+                                 (map (lambda (i)
+                                        (cons i x))
+                                      e))
+                               (queens (- size 1)))))))
+
+(length (queens 8))

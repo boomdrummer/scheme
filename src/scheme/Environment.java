@@ -6,14 +6,14 @@ import java.util.Objects;
 import static scheme.Utils.*;
 
 public class Environment {
+    static final Environment ENV0 = init();
     private HashMap<String, Object> map = new HashMap<>();
-    Environment parent;
-    static Environment INIT_ENV = new Environment().init();
-
-    public Environment() {}
+    private Environment parent;
+    private Environment() {
+    }
 
     public Environment(Object vars, Object vals, Environment env) {
-        if (length(vals) != length(vals) && !(vars instanceof Pair) && !(vals instanceof Pair)) {
+        if (length(vals) != length(vals)) {
             throw new SyntaxException("variables and values not match");
         }
         Pair variables = (Pair) vars;
@@ -26,6 +26,25 @@ public class Environment {
         parent = env;
     }
 
+    private static Environment init() {
+        Environment env = new Environment();
+        env.define("()", null);
+        env.define("car", unaryAdapter(Utils::car));
+        env.define("cdr", unaryAdapter(Utils::cdr));
+        env.define("null?", unaryAdapter(Objects::isNull));
+        env.define("cons", binaryAdapter(Utils::cons));
+        env.define("eq?", binaryAdapter((a, b) -> a == b));
+        env.define("equal", binaryAdapter(Object::equals));
+        env.define("+", numericAdapter((a, b) -> a + b));
+        env.define("-", numericAdapter((a, b) -> a - b));
+        env.define("*", numericAdapter((a, b) -> a * b));
+        env.define("/", numericAdapter((a, b) -> a / b));
+        env.define("%", numericAdapter((a, b) -> a % b));
+        env.define("=", numericAdapter((a, b) -> Math.abs(a - b) < 0.00000001));
+        env.define(">", numericAdapter((a, b) -> a > b));
+        env.define("<", numericAdapter((a, b) -> a < b));
+        return env;
+    }
 
     Object lookup(Object var) {
         if (var instanceof String) {
@@ -49,29 +68,9 @@ public class Environment {
         } else {
             throw new SyntaxException("expect a string...");
         }
-        return "done";
+        return (String) var;
     }
 
-
-    private Environment init() {
-        define("()", null);
-        define("car", unaryAdapter(Utils::car));
-        define("cdr", unaryAdapter(Utils::cdr));
-        define("null?", unaryAdapter(Objects::isNull));
-        define("quote", unaryAdapter(x -> x));
-        define("cons", binaryAdapter(Utils::cons));
-        define("eq?", binaryAdapter((a, b) -> a == b));
-        define("equal", binaryAdapter(Object::equals));
-        define("+", numericAdapter((a, b) -> a + b));
-        define("-", numericAdapter((a, b) -> a - b));
-        define("*", numericAdapter((a, b) -> a * b));
-        define("/", numericAdapter((a, b) -> a / b));
-        define("%", numericAdapter((a, b) -> a % b));
-        define("=", numericAdapter(Objects::equals));
-        define(">", numericAdapter((a, b) -> a > b));
-        define("<", numericAdapter((a, b) -> a < b));
-        return this;
-    }
 
 
 }

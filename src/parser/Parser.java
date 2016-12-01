@@ -20,28 +20,15 @@ public class Parser {
             if (token instanceof Character) {
                 switch ((char) token) {
                     case '(':
-                        Pair head = new Pair(null, null);
-                        Pair prev = head;
-                        token = parse();
-                        while (token != EOF && !(token instanceof Character && (char)token == ')')) {
-                            prev.second = new Pair(token, null);
-                            prev = (Pair) prev.second;
-                            token = parse();
-                        }
-
-                        if (token == EOF) {
-                            throw new ParseException("expect ),not complete...");
-                        } else {
-                            return head.second;
-                        }
+                        return readList();
                     case ')':
                         return ')';
                     case '\'':
                         return list("quote", parse());
                     default:
-                        throw new ParseException(token+" not supported ...");
+                        throw new ParseException(token + "is not supported ...");
                 }
-            }else{
+            } else {
                 return token;
             }
 
@@ -49,6 +36,21 @@ public class Parser {
             e.printStackTrace();
             return null;
         }
+    }
 
+    private Object readList() throws ParseException {
+        Pair head = new Pair(null, null);
+        Pair prev = head;
+        Object token = parse();
+        while (token != EOF && !(token instanceof Character && (char) token == ')')) {
+            prev.second = new Pair(token, null);
+            prev = (Pair) prev.second;
+            token = parse();
+        }
+
+        if (token == EOF)
+            throw new ParseException("expect ),giving EOF...");
+
+        return head.second;
     }
 }

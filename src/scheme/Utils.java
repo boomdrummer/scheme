@@ -7,11 +7,11 @@ import java.util.function.Function;
 @SuppressWarnings("unchecked")
 public class Utils {
 
-    public static Object cons(Object o1, Object o2) {
+    static Object cons(Object o1, Object o2) {
         return new Pair(o1, o2);
     }
 
-    public static Object car(Object pair) {
+    static Object car(Object pair) {
         if (pair instanceof Pair) {
             return ((Pair) pair).first;
         } else {
@@ -19,7 +19,7 @@ public class Utils {
         }
     }
 
-    public static Object cdr(Object pair) {
+    static Object cdr(Object pair) {
         if (pair instanceof Pair) {
             return ((Pair) pair).second;
         } else {
@@ -27,7 +27,7 @@ public class Utils {
         }
     }
 
-    public static Object map(Object o, Function f) {
+    static Object map(Object o, Function f) {
         if (o instanceof Pair) {
             Pair head = new Pair(null, null);
             Pair prev = head;
@@ -46,7 +46,7 @@ public class Utils {
     }
 
 
-    public static void foreach(Object o, Consumer f) {
+    private static void foreach(Object o, Consumer f) {
         while (o instanceof Pair) {
             Pair p = (Pair) o;
             f.accept(p.first);
@@ -54,23 +54,23 @@ public class Utils {
         }
     }
 
-    public static Object cadr(Object pair) {
+    static Object cadr(Object pair) {
         return car(cdr(pair));
     }
 
-    public static Object caddr(Object pair) {
+    static Object caddr(Object pair) {
         return car((cdr(cdr(pair))));
     }
 
-    public static Object cadddr(Object pair) {
+    static Object cadddr(Object pair) {
         return car(cdr(cdr(cdr(pair))));
     }
 
-    public static Object cddr(Object pair) {
+    static Object cddr(Object pair) {
         return cdr(cdr(pair));
     }
 
-    public static boolean isLast(Object pair) {
+    static boolean isLast(Object pair) {
         if (pair instanceof Pair) {
             return cdr(pair) == null;
         } else {
@@ -87,7 +87,7 @@ public class Utils {
     }
 
     static Function numericAdapter(BiFunction<Double, Double, Object> function) {
-        return p -> function.apply((Double)car(p), (Double)cadr(p));
+        return p -> function.apply((Double) car(p), (Double) cadr(p));
     }
 
 
@@ -97,7 +97,7 @@ public class Utils {
      * @param object whatever
      * @return if object is false return false,else return true
      */
-    public static boolean isTrue(Object object) {
+    static boolean isTrue(Object object) {
         return !(object instanceof Boolean && !((boolean) object));
     }
 
@@ -119,21 +119,11 @@ public class Utils {
      */
     static int length(Object list) {
         int length = 0;
-        while (list != null && list instanceof Pair) {
+        while (list instanceof Pair) {
             length++;
             list = ((Pair) list).second;
         }
-
-        if (list == null) {
-            return length;
-        } else {
-            throw new RuntimeException("not a list");
-        }
+        return length;
     }
 
-    public static void main(String[] args) {
-        Pair list = list(1, 2, 3, 4, 5);
-        foreach(map(list, e -> e instanceof Integer ? (int) e + 1 : 0), System.out::print);
-
-    }
 }
