@@ -1,2 +1,2 @@
 # scheme
-A 'scheme' interpreter write in 'Java'
+A `scheme` interpreter write in `Java`
