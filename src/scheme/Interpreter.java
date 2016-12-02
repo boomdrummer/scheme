@@ -1,17 +1,15 @@
 package scheme;
 
-import java.util.function.Function;
-
 import static scheme.Utils.*;
 
 public class Interpreter {
 
-    static Object eval(Object exp) {
+    static Object eval(Object exp) throws SyntaxException {
         return eval(exp, Environment.ENV0);
     }
 
     @SuppressWarnings("unchecked")
-    static Object eval(Object exp, Environment env) {
+    static Object eval(Object exp, Environment env) throws SyntaxException {
 
         loop:
         while (true) {
@@ -56,8 +54,8 @@ public class Interpreter {
                     Object params = evaluateList(cdr(exp), env);
                     if (fun instanceof Closure) {               //custom function
                         return apply((Closure) fun, params);
-                    } else if (fun instanceof Function) {
-                        return ((Function) fun).apply(params);   //primitive function
+                    } else if (fun instanceof Func) {
+                        return ((Func) fun).apply(params);   //primitive function
                     } else {
                         return null;
                     }
@@ -65,14 +63,15 @@ public class Interpreter {
             } else {
                 return exp;
             }
+
         }
     }
 
-    static private Object evaluateList(Object list, Environment env) {
+    static private Object evaluateList(Object list, Environment env) throws SyntaxException {
         return map(list, exp -> eval(exp, env));
     }
 
-    static private Object apply(Closure closure, Object vals) {
+    static private Object apply(Closure closure, Object vals) throws SyntaxException {
         Environment env = closure.env.extend(closure.params, vals);
         Object body = closure.body;
         while (!isLast(body)) {

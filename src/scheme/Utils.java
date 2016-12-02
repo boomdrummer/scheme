@@ -2,7 +2,6 @@ package scheme;
 
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
 public class Utils {
@@ -11,7 +10,7 @@ public class Utils {
         return new Pair(o1, o2);
     }
 
-    static Object car(Object pair) {
+    static Object car(Object pair) throws SyntaxException {
         if (pair instanceof Pair) {
             return ((Pair) pair).first;
         } else {
@@ -19,7 +18,7 @@ public class Utils {
         }
     }
 
-    static Object cdr(Object pair) {
+    static Object cdr(Object pair) throws SyntaxException {
         if (pair instanceof Pair) {
             return ((Pair) pair).second;
         } else {
@@ -27,7 +26,7 @@ public class Utils {
         }
     }
 
-    static Object map(Object o, Function f) {
+    static Object map(Object o, Func f) throws SyntaxException {
         if (o instanceof Pair) {
             Pair head = new Pair(null, null);
             Pair prev = head;
@@ -54,23 +53,23 @@ public class Utils {
         }
     }
 
-    static Object cadr(Object pair) {
+    static Object cadr(Object pair) throws SyntaxException {
         return car(cdr(pair));
     }
 
-    static Object caddr(Object pair) {
+    static Object caddr(Object pair) throws SyntaxException {
         return car((cdr(cdr(pair))));
     }
 
-    static Object cadddr(Object pair) {
+    static Object cadddr(Object pair) throws SyntaxException {
         return car(cdr(cdr(cdr(pair))));
     }
 
-    static Object cddr(Object pair) {
+    static Object cddr(Object pair) throws SyntaxException {
         return cdr(cdr(pair));
     }
 
-    static boolean isLast(Object pair) {
+    static boolean isLast(Object pair) throws SyntaxException {
         if (pair instanceof Pair) {
             return cdr(pair) == null;
         } else {
@@ -78,15 +77,15 @@ public class Utils {
         }
     }
 
-    static Function unaryAdapter(Function function) {
-        return p -> function.apply(car(p));
+    static Func unaryAdapter(Func fun) {
+        return p -> fun.apply(car(p));
     }
 
-    static Function binaryAdapter(BiFunction function) {
+    static Func binaryAdapter(BiFunction function) {
         return p -> function.apply(car(p), cadr(p));
     }
 
-    static Function numericAdapter(BiFunction<Double, Double, Object> function) {
+    static Func numericAdapter(BiFunction<Double, Double, Object> function) {
         return p -> function.apply((Double) car(p), (Double) cadr(p));
     }
 
@@ -129,5 +128,13 @@ public class Utils {
 
     static void print(String s) {
         System.out.print(s);
+    }
+
+    static void println(String s) {
+        System.out.println(s);
+    }
+
+    static void warn(String s) {
+        System.err.println(s);
     }
 }

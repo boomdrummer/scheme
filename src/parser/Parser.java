@@ -1,6 +1,7 @@
 package parser;
 
 import scheme.Pair;
+import scheme.SyntaxException;
 
 import java.io.InputStream;
 
@@ -8,14 +9,13 @@ import static parser.Lexer.EOF;
 import static scheme.Utils.list;
 
 public class Parser {
-    Lexer lexer;
+    private Lexer lexer;
 
     public Parser(InputStream in) {
         lexer = new Lexer(in);
     }
 
-    public Object parse() {
-        try {
+    public Object parse() throws SyntaxException {
             Object token = lexer.nextToken();
             if (token instanceof Character) {
                 switch ((char) token) {
@@ -26,19 +26,15 @@ public class Parser {
                     case '\'':
                         return list("quote", parse());
                     default:
-                        throw new ParseException(token + "is not supported ...");
+                        throw new SyntaxException(token + "is not supported ...");
                 }
             } else {
                 return token;
             }
 
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
-    private Object readList() throws ParseException {
+    private Object readList() throws SyntaxException {
         Pair head = new Pair(null, null);
         Pair prev = head;
         Object token = parse();
@@ -49,7 +45,7 @@ public class Parser {
         }
 
         if (token == EOF)
-            throw new ParseException("expect ),giving EOF...");
+            throw new SyntaxException("expect ),giving EOF...");
 
         return head.second;
     }

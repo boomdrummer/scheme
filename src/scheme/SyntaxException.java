@@ -1,6 +1,6 @@
 package scheme;
 
-public class SyntaxException extends RuntimeException {
+public class SyntaxException extends Exception {
 
     public SyntaxException(String s) {
         super(s);
