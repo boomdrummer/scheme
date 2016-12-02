@@ -1,61 +1,17 @@
 package scheme;
 
-import parser.Lexer;
-import parser.Parser;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Function;
 
 import static scheme.Utils.*;
 
 public class Interpreter {
-    private Environment env0 = Environment.ENV0;
 
-    public Interpreter() {
-        init();
-    }
-
-    public static void main(String[] args) {
-        Path path = Paths.get("test.txt");
-        try {
-            InputStream inputStream = Files.newInputStream(path);
-            Parser parser = new Parser(inputStream);
-            Interpreter interpreter = new Interpreter();
-            Object exp = parser.parse();
-            while (exp != Lexer.EOF) {
-                System.out.println(interpreter.eval(exp, Environment.ENV0));
-                exp = parser.parse();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void init() {
-        Path path = Paths.get("primitive.init");
-        InputStream in = null;
-        try {
-            in = Files.newInputStream(path);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("primitive.init file not exists");
-            System.exit(2);
-        }
-        Parser parser = new Parser(in);
-        Object o = parser.parse();
-        while (o != Lexer.EOF) {
-            eval(o, env0);
-            o = parser.parse();
-        }
+    static Object eval(Object exp) {
+        return eval(exp, Environment.ENV0);
     }
 
     @SuppressWarnings("unchecked")
-    private Object eval(Object exp, Environment env) {
+    static Object eval(Object exp, Environment env) {
 
         loop:
         while (true) {
@@ -78,7 +34,8 @@ public class Interpreter {
                 } else if (first == "let") {
                     Object params = cadr(exp);
                     exp = caddr(exp);   // exp -> let expression body
-                    env = new Environment(map(params, Utils::car), evaluateList(map(params, Utils::cadr), env), env); // extend environment with let parameter list
+//                    env = new Environment(map(params, Utils::car), evaluateList(map(params, Utils::cadr), env), env); // extend environment with let parameter list
+                    env = env.extend(map(params, Utils::car), evaluateList(map(params, Utils::cadr), env)); // extend environment with let parameter list
                 } else if (first == "cond") {
                     Object list = cdr(exp);
                     while (list != null) {
@@ -101,7 +58,7 @@ public class Interpreter {
                         return apply((Closure) fun, params);
                     } else if (fun instanceof Function) {
                         return ((Function) fun).apply(params);   //primitive function
-                    }else {
+                    } else {
                         return null;
                     }
                 }
@@ -111,12 +68,12 @@ public class Interpreter {
         }
     }
 
-    private Object evaluateList(Object list, Environment env) {
+    static private Object evaluateList(Object list, Environment env) {
         return map(list, exp -> eval(exp, env));
     }
 
-    private Object apply(Closure closure, Object vals) {
-        Environment env = new Environment(closure.params, vals, closure.env);
+    static private Object apply(Closure closure, Object vals) {
+        Environment env = closure.env.extend(closure.params, vals);
         Object body = closure.body;
         while (!isLast(body)) {
             eval(car(body), env);

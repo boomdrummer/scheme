@@ -126,4 +126,8 @@ public class Utils {
         return length;
     }
 
+
+    static void print(String s) {
+        System.out.print(s);
+    }
 }
